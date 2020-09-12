@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7259AA8F-3687-4B94-98E5-B1CE1DD7322D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelDataReader.FieldMap", "src\ExcelDataReader.FieldMaps\ExcelDataReader.FieldMap.csproj", "{A5A6A692-2764-4EBE-862A-3F8068282A4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelDataReader.FieldMap", "src\ExcelDataReader.FieldMaps\ExcelDataReader.FieldMaps.csproj", "{A5A6A692-2764-4EBE-862A-3F8068282A4E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BF070EED-195E-46DC-96B1-CB0C0D60EAC1}"
 EndProject
