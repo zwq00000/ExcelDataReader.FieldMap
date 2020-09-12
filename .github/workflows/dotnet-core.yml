@@ -43,4 +43,4 @@ jobs:
         dotnet pack src/ExcelDataReader.FieldMaps -o ../../publish/ -c Release -p:PackageVersion=3.6.0-ci-$subversion
     - name: push nuget
       run:
-        dotnet nuget push **/*.nupkg -k ${{secrets.nuget_apikey}} -s nuget.org
+        dotnet nuget push **/*.nupkg -k ${{secrets.nuget_apikey}} -s https://api.nuget.org/v3/index.json
