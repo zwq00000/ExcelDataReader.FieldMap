@@ -14,6 +14,9 @@ namespace ExcelDataReader.FieldMaps {
         private readonly FieldMapBuilder<T> _fieldMaps;
         private readonly ReadSettings _settings;
 
+        public ExcelFileParser (FieldMapBuilder<T> fieldMaps) :this(fieldMaps,new ReadSettings()) {
+        }
+
         public ExcelFileParser (FieldMapBuilder<T> fieldMaps, ReadSettings settings) {
             this._fieldMaps = fieldMaps;
             this._settings = settings;
