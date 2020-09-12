@@ -25,12 +25,12 @@ namespace ExcelDataReader.FieldMaps {
 
         public ModelStateDictionary ModelState { get; }
 
-        public IEnumerable<T> Read (Stream stream) {
+        public virtual IEnumerable<T> Read (Stream stream) {
             this.ModelState.Clear();
             return ParseExcelFile (stream, this.ModelState).ToArray ();
         }
 
-        public IEnumerable<T> Read (Stream stream, ModelStateDictionary modelState) {
+        public virtual IEnumerable<T> Read (Stream stream, ModelStateDictionary modelState) {
             return ParseExcelFile (stream, modelState).ToArray ();
         }
 
