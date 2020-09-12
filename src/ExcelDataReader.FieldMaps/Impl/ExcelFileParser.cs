@@ -45,7 +45,10 @@ namespace ExcelDataReader.FieldMaps {
                         //skip start rows
                         reader.Read ();
                     }
-                    ReadHeader (reader, _fieldMaps);
+                    if(!_settings.IgnoreHeader){
+                        ReadHeader (reader, _fieldMaps);
+                    }
+                    
                     if (ValidateColumns (_fieldMaps, modelState)) {
                         var rowNumField = _settings.GetRowNumberMap (_fieldMaps);
                         int row = 1;

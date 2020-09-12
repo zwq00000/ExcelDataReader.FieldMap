@@ -6,7 +6,17 @@ namespace ExcelDataReader.FieldMaps {
 
         public string SheetName { get; set; }
 
+        /// <summary>
+        /// 起始行
+        /// </summary>
+        /// <value></value>
         public int StartRow { get; set; }
+
+        /// <summary>
+        /// 忽略 表头映射,手动指定数据列
+        /// </summary>
+        /// <value></value>
+        public bool IgnoreHeader{get;set;   }
 
         /// <summary>
         /// 行号字段
