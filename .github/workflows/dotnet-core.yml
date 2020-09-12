@@ -40,7 +40,7 @@ jobs:
       run: |
         subversion=`date +%Y%m%d-%H%m`
         echo $subversion
-        dotnet pack src/ExcelDataReader.FieldMaps -o ../../publish/ -c Release -p:PackageVersion=3.6.0-ci-$subversion
+        dotnet pack src/ExcelDataReader.FieldMaps -o ./publish/ -c Release -p:PackageVersion=3.6.0-ci-$subversion
     - name: push nuget
       run:
-        dotnet nuget push **/*.nupkg -k ${{secrets.nuget_apikey}} -s https://api.nuget.org/v3/index.json
+        dotnet nuget push ./publish/*.nupkg -k ${{secrets.nuget_apikey}} -s https://api.nuget.org/v3/index.json
