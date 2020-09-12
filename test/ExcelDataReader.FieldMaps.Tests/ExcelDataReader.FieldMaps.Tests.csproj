@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ExcelDataReader.FieldMaps\ExcelDataReader.FieldMap.csproj" />
+    <ProjectReference Include="..\..\src\ExcelDataReader.FieldMaps\ExcelDataReader.FieldMaps.csproj" />
   </ItemGroup>
 
 </Project>
