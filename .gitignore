@@ -217,8 +217,3 @@ ModelManifest.xml
 #Build Result
 /Build/*.exe
 /Build/*.zip
-
-
-# excel templates
-*.xls
-*.xlsx
