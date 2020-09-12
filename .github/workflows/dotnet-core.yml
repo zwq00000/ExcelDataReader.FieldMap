@@ -23,3 +23,24 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-restore --verbosity normal
+  
+  publish:
+    needs: [build]
+    runs-on: ubuntu-latest   
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+    - name: Package
+      shell: bash
+      run: |
+        subversion=`date +%Y%m%d-%H%m`
+        echo $subversion
+        dotnet pack src/ExcelDataReader.FieldMaps -o ../../publish/ -c Release -p:PackageVersion=3.6.0-ci-$subversion
+    - name: push nuget
+      run:
+        dotnet nuget push **/*.nupkg -k ${{secrets.nuget_apikey}} -s nuget.org
