@@ -21,6 +21,12 @@ namespace ExcelDataReader.FieldMaps {
         /// </summary>
         /// <value></value>
         ModelStateDictionary ModelState { get; }
+
+        /// <summary>
+        /// 文件读取配置
+        /// </summary>
+        /// <value></value>
+        ReadSettings Settings { get; }
     }
 
 }

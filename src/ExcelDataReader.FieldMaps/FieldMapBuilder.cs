@@ -12,6 +12,8 @@ namespace ExcelDataReader.FieldMaps {
     /// <typeparam name="T"></typeparam>
     public class FieldMapBuilder<T> : IEnumerable<IFieldMap<T>> {
 
+        internal const int DefaultColumnIndex = -1;
+
         private IList<IFieldMap<T>> _innerList = new List<IFieldMap<T>> ();
         public FieldMapBuilder () {
 
@@ -71,6 +73,15 @@ namespace ExcelDataReader.FieldMaps {
             var map = new FieldMap<T, TValue> (caption, setter, convert, accesser.IsRequired ());
             _innerList.Add (map);
             return this;
+        }
+
+        /// <summary>
+        /// 重置 映射关系
+        /// </summary>
+        public void Reset(){
+            foreach(var item in this._innerList){
+                item.ColumnIndex = DefaultColumnIndex;
+            }
         }
 
         public IEnumerator<IFieldMap<T>> GetEnumerator () {

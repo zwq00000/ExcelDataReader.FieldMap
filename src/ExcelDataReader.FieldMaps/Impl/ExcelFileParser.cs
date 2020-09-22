@@ -14,8 +14,7 @@ namespace ExcelDataReader.FieldMaps {
         private readonly FieldMapBuilder<T> _fieldMaps;
         private readonly ReadSettings _settings;
 
-        public ExcelFileParser (FieldMapBuilder<T> fieldMaps) :this(fieldMaps,new ReadSettings()) {
-        }
+        public ExcelFileParser (FieldMapBuilder<T> fieldMaps) : this (fieldMaps, new ReadSettings ()) { }
 
         public ExcelFileParser (FieldMapBuilder<T> fieldMaps, ReadSettings settings) {
             this._fieldMaps = fieldMaps;
@@ -23,10 +22,20 @@ namespace ExcelDataReader.FieldMaps {
             this.ModelState = new ModelStateDictionary ();
         }
 
+        /// <summary>
+        /// 解析结果错误信息
+        /// </summary>
+        /// <value></value>
         public ModelStateDictionary ModelState { get; }
 
+        /// <summary>
+        /// 读取配置
+        /// </summary>
+        /// <value></value>
+        public ReadSettings Settings { get => _settings; }
+
         public virtual IEnumerable<T> Read (Stream stream) {
-            this.ModelState.Clear();
+            this.ModelState.Clear ();
             return ParseExcelFile (stream, this.ModelState).ToArray ();
         }
 
@@ -37,18 +46,7 @@ namespace ExcelDataReader.FieldMaps {
         private IEnumerable<T> ParseExcelFile (Stream stream, ModelStateDictionary modelState) {
             modelState.Clear ();
             using (var reader = ExcelReaderFactory.CreateReader (stream)) {
-                do {
-                    if (!_settings.IsThisSheet (reader.Name)) {
-                        continue;
-                    }
-                    for (var i = 0; i < _settings.StartRow; i++) {
-                        //skip start rows
-                        reader.Read ();
-                    }
-                    if(!_settings.IgnoreHeader){
-                        ReadHeader (reader, _fieldMaps);
-                    }
-                    
+                if (MatchWorkSheet (reader)) {
                     if (ValidateColumns (_fieldMaps, modelState)) {
                         var rowNumField = _settings.GetRowNumberMap (_fieldMaps);
                         int row = 1;
@@ -64,8 +62,32 @@ namespace ExcelDataReader.FieldMaps {
                             }
                         }
                     }
-                } while (reader.NextResult ());
+                } else {
+                    ModelState.AddModelError ("WorkSheet", "没有找到合适的工作表");
+                }
             }
+        }
+
+        private bool MatchWorkSheet (IExcelDataReader reader) {
+            reader.Reset ();
+            do {
+                _fieldMaps.Reset ();
+                if (!_settings.IsThisSheet (reader.Name)) {
+                    continue;
+                }
+                for (var i = 0; i < _settings.StartRow; i++) {
+                    //skip start rows
+                    reader.Read ();
+                }
+                if (!_settings.IgnoreHeader) {
+                    ReadHeader (reader, _fieldMaps);
+                }
+                if (_fieldMaps.Where (f => f.ColumnIndex > FieldMapBuilder<T>.DefaultColumnIndex).Count () > _fieldMaps.Count () / 2) {
+                    //超过 50% 匹配
+                    return true;
+                }
+            } while (reader.NextResult ());
+            return false;
         }
 
         private static bool ReadHeader (IExcelDataReader reader, FieldMapBuilder<T> fields) {

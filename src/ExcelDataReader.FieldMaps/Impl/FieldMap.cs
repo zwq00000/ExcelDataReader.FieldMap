@@ -8,10 +8,12 @@ namespace ExcelDataReader.FieldMaps {
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public class FieldMap<T, TValue> : IFieldMap<T> {
+    internal class FieldMap<T, TValue> : IFieldMap<T> {
 
         private readonly Action<T, TValue> _setter;
         private readonly Func<object, TValue> _converter;
+
+        internal const int DefaultColumnIndex = -1;
 
         /// <summary>
         /// 真值列表
@@ -38,7 +40,7 @@ namespace ExcelDataReader.FieldMaps {
             this.Caption = caption;
             this._setter = setter;
             this._converter = convert;
-            this.ColumnIndex = -1;
+            this.ColumnIndex = DefaultColumnIndex;
             this.IsRequired = required;
         }
         internal FieldMap (string caption, int columnIndex, bool required = false) {
