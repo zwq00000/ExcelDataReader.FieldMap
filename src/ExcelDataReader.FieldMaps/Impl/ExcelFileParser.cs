@@ -80,7 +80,7 @@ namespace ExcelDataReader.FieldMaps {
                     reader.Read ();
                 }
                 if (!_settings.IgnoreHeader) {
-                    ReadHeader (reader, _fieldMaps);
+                    ReadHeader (reader);
                 }
                 if (_fieldMaps.Where (f => f.ColumnIndex > FieldMapBuilder<T>.DefaultColumnIndex).Count () > _fieldMaps.Count () / 2) {
                     //超过 50% 匹配
@@ -90,7 +90,8 @@ namespace ExcelDataReader.FieldMaps {
             return false;
         }
 
-        private static bool ReadHeader (IExcelDataReader reader, FieldMapBuilder<T> fields) {
+        private bool ReadHeader (IExcelDataReader reader) {
+            var matchMethod = Settings.GetHeaderMatchMethod();
             if (reader.Read ()) {
                 for (var col = 0; col < reader.FieldCount; col++) {
                     if (reader.IsDBNull (col)) {
@@ -98,7 +99,7 @@ namespace ExcelDataReader.FieldMaps {
                     }
                     var cap = reader.GetString (col).Trim ();
                     if (!string.IsNullOrEmpty (cap)) {
-                        var field = fields.FirstOrDefault (f => cap.StartsWith (f.Caption));
+                        var field = _fieldMaps.FirstOrDefault (f => matchMethod(cap,f.Caption));
                         if (field != null) {
                             field.ColumnIndex = col;
                         }

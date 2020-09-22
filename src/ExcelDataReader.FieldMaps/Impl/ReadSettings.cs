@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace ExcelDataReader.FieldMaps {
@@ -38,6 +39,14 @@ namespace ExcelDataReader.FieldMaps {
         /// <value></value>
         public string RowNumberField { get; set; }
 
+        /// <summary>
+        /// 表头和 <see cref="IFieldMap{T}.Caption"/> 匹配的方式
+        /// </summary>
+        /// <remark>
+        /// 设置 表头和 <see cref="IFieldMap{T}.Caption"/> 匹配的方式
+        /// </remark>
+        public StringMatchMode HeaderMatchMode { get; set; } = StringMatchMode.Same;
+
         internal IFieldMap<T> GetRowNumberMap<T> (FieldMapBuilder<T> builder) {
             if (string.IsNullOrEmpty (RowNumberField)) {
                 return default (IFieldMap<T>);
@@ -50,6 +59,21 @@ namespace ExcelDataReader.FieldMaps {
                 return false;
             }
             return string.Equals (sheetName, SheetName, System.StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        internal Func<string, string, bool> GetHeaderMatchMethod () {
+            switch (HeaderMatchMode) {
+                case StringMatchMode.Same:
+                    return string.Equals;
+                case StringMatchMode.StartWith:
+                    return (s, t) => s.StartsWith (t);
+                case StringMatchMode.EndsWith:
+                    return (s, t) => s.EndsWith (t);
+                case StringMatchMode.Contains:
+                    return (s, t) => s.Contains (t);
+                default:
+                    throw new NotSupportedException($"不支持的匹配类型 {HeaderMatchMode}");
+            }
         }
     }
 }
