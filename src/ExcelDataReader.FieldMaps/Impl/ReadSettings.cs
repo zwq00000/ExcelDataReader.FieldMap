@@ -41,6 +41,7 @@ namespace ExcelDataReader.FieldMaps {
 
         /// <summary>
         /// 表头和 <see cref="IFieldMap{T}.Caption"/> 匹配的方式
+        /// 默认为 <see cref="StringMatchMode.Same">完全相同</see>
         /// </summary>
         /// <remark>
         /// 设置 表头和 <see cref="IFieldMap{T}.Caption"/> 匹配的方式
