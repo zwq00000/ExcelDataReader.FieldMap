@@ -45,10 +45,9 @@ namespace ExcelDataReader.FieldMaps {
             }
             return builder.FirstOrDefault (f => string.Equals (f.Caption, RowNumberField));
         }
-
-        public bool IsThisSheet (string sheetName) {
+        internal bool MatchSheetName (string sheetName) {
             if (string.IsNullOrEmpty (SheetName)) {
-                return true;
+                return false;
             }
             return string.Equals (sheetName, SheetName, System.StringComparison.CurrentCultureIgnoreCase);
         }

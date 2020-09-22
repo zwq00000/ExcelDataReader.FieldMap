@@ -72,8 +72,8 @@ namespace ExcelDataReader.FieldMaps {
             reader.Reset ();
             do {
                 _fieldMaps.Reset ();
-                if (!_settings.IsThisSheet (reader.Name)) {
-                    continue;
+                if (_settings.MatchSheetName (reader.Name)) {
+                    return true;
                 }
                 for (var i = 0; i < _settings.StartRow; i++) {
                     //skip start rows
