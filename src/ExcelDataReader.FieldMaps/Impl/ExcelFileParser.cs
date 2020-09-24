@@ -46,10 +46,10 @@ namespace ExcelDataReader.FieldMaps {
         private IEnumerable<T> ParseExcelFile (Stream stream, ModelStateDictionary modelState) {
             modelState.Clear ();
             using (var reader = ExcelReaderFactory.CreateReader (stream)) {
-                if (MatchWorkSheet (reader)) {
+                if (MatchWorkSheet (reader, out var headerRow)) {
                     if (ValidateColumns (_fieldMaps, modelState)) {
                         var rowNumField = _settings.GetRowNumberMap (_fieldMaps);
-                        int row = 1;
+                        int row = headerRow;
                         while (reader.Read ()) {
                             row++;
                             if (!IsEmptyRow (reader, _fieldMaps)) {
@@ -68,30 +68,56 @@ namespace ExcelDataReader.FieldMaps {
             }
         }
 
-        private bool MatchWorkSheet (IExcelDataReader reader) {
+        private bool MatchWorkSheet (IExcelDataReader reader, out int headerRow) {
             reader.Reset ();
             do {
                 _fieldMaps.Reset ();
                 if (_settings.MatchSheetName (reader.Name)) {
+                    TryReadHeader(reader,out headerRow);
                     return true;
                 }
-                for (var i = 0; i < _settings.StartRow; i++) {
-                    //skip start rows
-                    reader.Read ();
-                }
-                if (!_settings.IgnoreHeader) {
-                    ReadHeader (reader);
-                }
-                if (_fieldMaps.Where (f => f.ColumnIndex > FieldMapBuilder<T>.DefaultColumnIndex).Count () > _fieldMaps.Count () / 2) {
-                    //超过 50% 匹配
+                if (TryReadHeader (reader, out headerRow)) {
                     return true;
                 }
             } while (reader.NextResult ());
+            headerRow = 1;
             return false;
         }
 
+        /// <summary>
+        /// 尝试读取标题行
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="headerRow">表头行号</param>
+        /// <returns></returns>
+        private bool TryReadHeader (IExcelDataReader reader, out int headerRow) {
+            if (_settings.IgnoreHeader) {
+                headerRow = 0;
+                return true;
+            }
+            for (var i = 1; i < _settings.MaxHeaderRow; i++) {
+                if (ReadHeader (reader)) {
+                    if (_fieldMaps.Where (f => f.ColumnIndex > FieldMapBuilder<T>.DefaultColumnIndex).Count () > _fieldMaps.Count () / 2) {
+                        headerRow = i;
+                        return true;
+                    }
+                }else{
+                    //读取失败,跳出循环
+                    break;
+                }
+            }
+            headerRow = 0;
+            return false;
+        }
+
+        /// <summary>
+        /// 读取标题行,并设置 <see cref="IFieldMap{T}.ColumnIndex"/>
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         private bool ReadHeader (IExcelDataReader reader) {
-            var matchMethod = Settings.GetHeaderMatchMethod();
+            var matchMethod = Settings.GetHeaderMatchMethod ();
+            _fieldMaps.Reset ();
             if (reader.Read ()) {
                 for (var col = 0; col < reader.FieldCount; col++) {
                     if (reader.IsDBNull (col)) {
@@ -99,7 +125,7 @@ namespace ExcelDataReader.FieldMaps {
                     }
                     var cap = reader.GetString (col).Trim ();
                     if (!string.IsNullOrEmpty (cap)) {
-                        var field = _fieldMaps.FirstOrDefault (f => matchMethod(cap,f.Caption));
+                        var field = _fieldMaps.FirstOrDefault (f => matchMethod (cap, f.Caption));
                         if (field != null) {
                             field.ColumnIndex = col;
                         }

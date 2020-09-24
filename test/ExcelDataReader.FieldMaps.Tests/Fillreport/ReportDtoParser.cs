@@ -14,8 +14,7 @@
         .Add ("Fill Time", r => r.FillTime);
 
         private static ReadSettings settings = new ReadSettings(){
-            RowNumberField = "Row",
-            StartRow = 1
+            RowNumberField = "Row"
         };
 
         public ReportDtoParser () : base (builder,settings) { }

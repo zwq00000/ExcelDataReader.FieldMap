@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using Xunit;
 
 namespace ExcelDataReader.FieldMaps.Tests {
@@ -21,6 +22,7 @@ namespace ExcelDataReader.FieldMaps.Tests {
                 var result = parser.Read (stream);
                 Assert.NotNull (result);
                 Assert.NotEmpty (result);
+                Assert.Equal(16,result.Count());
                 Assert.True (parser.ModelState.IsValid);
             }
         }

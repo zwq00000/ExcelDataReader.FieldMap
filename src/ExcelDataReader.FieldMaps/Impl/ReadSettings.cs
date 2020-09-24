@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 
 namespace ExcelDataReader.FieldMaps {
@@ -12,17 +13,20 @@ namespace ExcelDataReader.FieldMaps {
         /// <value></value>
         public string SheetName { get; set; }
 
-        // /// <summary>
-        // /// 自动匹配 Worksheet
-        // /// </summary>
-        // /// <value></value>
-        // public bool AutoMatchSheet{get;set;}
-
         /// <summary>
         /// 起始行行号
         /// </summary>
         /// <value></value>
+        [Obsolete ("改为自动匹配标题行,搜索前5行检查标题")]
         public int StartRow { get; set; }
+
+        /// <summary>
+        /// 最大表头行出现的行号
+        /// 默认为 5
+        /// </summary>
+        /// <value></value>
+        [DefaultValue(5)]
+        public int MaxHeaderRow { get; set; } = 5;
 
         /// <summary>
         /// 忽略 表头映射,手动指定数据列
@@ -73,7 +77,7 @@ namespace ExcelDataReader.FieldMaps {
                 case StringMatchMode.Contains:
                     return (s, t) => s.Contains (t);
                 default:
-                    throw new NotSupportedException($"不支持的匹配类型 {HeaderMatchMode}");
+                    throw new NotSupportedException ($"不支持的匹配类型 {HeaderMatchMode}");
             }
         }
     }
