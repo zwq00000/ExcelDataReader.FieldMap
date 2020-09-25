@@ -123,7 +123,7 @@ namespace ExcelDataReader.FieldMaps {
                     if (reader.IsDBNull (col)) {
                         continue;
                     }
-                    var cap = reader.GetString (col).Trim ();
+                    var cap = reader.GetValue(col).ToString().Trim ();
                     if (!string.IsNullOrEmpty (cap)) {
                         var field = _fieldMaps.FirstOrDefault (f => matchMethod (cap, f.Caption));
                         if (field != null) {
