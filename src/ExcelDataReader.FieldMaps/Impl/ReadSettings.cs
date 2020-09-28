@@ -25,7 +25,7 @@ namespace ExcelDataReader.FieldMaps {
         /// 默认为 5
         /// </summary>
         /// <value></value>
-        [DefaultValue(5)]
+        [DefaultValue (5)]
         public int MaxHeaderRow { get; set; } = 5;
 
         /// <summary>
@@ -59,6 +59,7 @@ namespace ExcelDataReader.FieldMaps {
             }
             return builder.FirstOrDefault (f => string.Equals (f.Caption, RowNumberField));
         }
+
         internal bool MatchSheetName (string sheetName) {
             if (string.IsNullOrEmpty (SheetName)) {
                 return false;
@@ -67,17 +68,18 @@ namespace ExcelDataReader.FieldMaps {
         }
 
         internal Func<string, string, bool> GetHeaderMatchMethod () {
+            var comparison = StringComparison.CurrentCultureIgnoreCase;
             switch (HeaderMatchMode) {
                 case StringMatchMode.Same:
-                    return string.Equals;
+                    return (s, t) => string.Equals (s, t, comparison);
                 case StringMatchMode.StartWith:
-                    return (s, t) => s.StartsWith (t);
+                    return (s, t) => s.StartsWith (t, comparison);
                 case StringMatchMode.EndsWith:
-                    return (s, t) => s.EndsWith (t);
+                    return (s, t) => s.EndsWith (t, comparison);
                 case StringMatchMode.Contains:
                     return (s, t) => s.Contains (t);
                 default:
-                    throw new NotSupportedException ($"不支持的匹配类型 {HeaderMatchMode}");
+                    return string.Equals;
             }
         }
     }

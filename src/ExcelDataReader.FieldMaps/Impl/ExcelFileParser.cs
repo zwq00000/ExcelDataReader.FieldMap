@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ExcelDataReader;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ExcelDataReader.FieldMaps {
@@ -26,7 +25,7 @@ namespace ExcelDataReader.FieldMaps {
         /// 解析结果错误信息
         /// </summary>
         /// <value></value>
-        public ModelStateDictionary ModelState { get; }
+        public ModelStateDictionary ModelState { get; private set;}
 
         /// <summary>
         /// 读取配置
@@ -36,18 +35,19 @@ namespace ExcelDataReader.FieldMaps {
 
         public virtual IEnumerable<T> Read (Stream stream) {
             this.ModelState.Clear ();
-            return ParseExcelFile (stream, this.ModelState).ToArray ();
+            return ParseExcelFile (stream).ToArray ();
         }
 
         public virtual IEnumerable<T> Read (Stream stream, ModelStateDictionary modelState) {
-            return ParseExcelFile (stream, modelState).ToArray ();
+            this.ModelState = modelState;
+            return ParseExcelFile (stream).ToArray ();
         }
 
-        private IEnumerable<T> ParseExcelFile (Stream stream, ModelStateDictionary modelState) {
-            modelState.Clear ();
+        private IEnumerable<T> ParseExcelFile (Stream stream) {
+            ModelState.Clear ();
             using (var reader = ExcelReaderFactory.CreateReader (stream)) {
                 if (MatchWorkSheet (reader, out var headerRow)) {
-                    if (ValidateColumns (_fieldMaps, modelState)) {
+                    if (ValidateColumns (_fieldMaps)) {
                         var rowNumField = _settings.GetRowNumberMap (_fieldMaps);
                         int row = headerRow;
                         while (reader.Read ()) {
@@ -73,7 +73,7 @@ namespace ExcelDataReader.FieldMaps {
             do {
                 _fieldMaps.Reset ();
                 if (_settings.MatchSheetName (reader.Name)) {
-                    TryReadHeader(reader,out headerRow);
+                    TryReadHeader (reader, out headerRow);
                     return true;
                 }
                 if (TryReadHeader (reader, out headerRow)) {
@@ -101,7 +101,7 @@ namespace ExcelDataReader.FieldMaps {
                         headerRow = i;
                         return true;
                     }
-                }else{
+                } else {
                     //读取失败,跳出循环
                     break;
                 }
@@ -123,7 +123,7 @@ namespace ExcelDataReader.FieldMaps {
                     if (reader.IsDBNull (col)) {
                         continue;
                     }
-                    var cap = reader.GetValue(col).ToString().Trim ();
+                    var cap = reader.GetValue (col).ToString ().Trim ();
                     if (!string.IsNullOrEmpty (cap)) {
                         var field = _fieldMaps.FirstOrDefault (f => matchMethod (cap, f.Caption));
                         if (field != null) {
@@ -159,7 +159,7 @@ namespace ExcelDataReader.FieldMaps {
                     }
                     if (reader.IsDBNull (field.ColumnIndex)) {
                         if (field.IsRequired) {
-                            this.ModelState.AddModelError (field.Caption, $"第{rowNum}行 '{field.Caption}' 不能为空");
+                            this.ModelState.AddModelError ($"第{rowNum}行", $"列 '{field.Caption}'的值不能为空");
                             return false;
                         } else {
                             continue;
@@ -169,7 +169,7 @@ namespace ExcelDataReader.FieldMaps {
                     value = reader.GetValue (field.ColumnIndex);
                     field.SetValue (entity, value);
                 } catch (FormatException) {
-                    ModelState.AddModelError (field.Caption, $"值'{value}' 不能解析为{field.ValueType}");
+                    ModelState.AddModelError ($"第{rowNum}行", $"列 '{field.Caption}'的值'{value}' 不能解析为{field.ValueType.Name}");
                     return false;
                 }
             }
@@ -180,14 +180,13 @@ namespace ExcelDataReader.FieldMaps {
         /// 验证 数据列是否 存在映射
         /// </summary>
         /// <param name="fieldMaps"></param>
-        /// <param name="modelState"></param>
-        private bool ValidateColumns (FieldMapBuilder<T> fieldMaps, ModelStateDictionary modelState) {
+        private bool ValidateColumns (FieldMapBuilder<T> fieldMaps) {
             foreach (var field in fieldMaps) {
                 if (field.IsRequired && field.ColumnIndex < 0) {
-                    modelState.AddModelError (field.Caption, $"缺少 '{field.Caption}' 列映射");
+                    ModelState.AddModelError ("表头", $"缺少 '{field.Caption}' 列的映射");
                 }
             }
-            return modelState.IsValid;
+            return ModelState.IsValid;
         }
     }
 }
