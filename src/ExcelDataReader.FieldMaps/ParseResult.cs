@@ -66,8 +66,7 @@ namespace ExcelDataReader.FieldMaps {
         }
 
         public void AddRowError (int row, string caption, string message) {
-            Errors.Add (new RowError (row, message));
+            Errors.Add (new RowError (row, caption, message));
         }
     }
-
 }
