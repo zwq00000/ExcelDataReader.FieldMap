@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ExcelDataReader.FieldMaps {
     /// <summary>
@@ -18,14 +17,14 @@ namespace ExcelDataReader.FieldMaps {
         public ExcelFileParser (FieldMapBuilder<T> fieldMaps, ReadSettings settings) {
             this._fieldMaps = fieldMaps;
             this._settings = settings;
-            this.ModelState = new ModelStateDictionary ();
+            this.ParseResult = new ParseResult ();
         }
 
         /// <summary>
-        /// 解析结果错误信息
+        /// 解析结果
         /// </summary>
         /// <value></value>
-        public ModelStateDictionary ModelState { get; private set;}
+        public ParseResult ParseResult { get; private set; }
 
         /// <summary>
         /// 读取配置
@@ -34,20 +33,16 @@ namespace ExcelDataReader.FieldMaps {
         public ReadSettings Settings { get => _settings; }
 
         public virtual IEnumerable<T> Read (Stream stream) {
-            this.ModelState.Clear ();
-            return ParseExcelFile (stream).ToArray ();
-        }
-
-        public virtual IEnumerable<T> Read (Stream stream, ModelStateDictionary modelState) {
-            this.ModelState = modelState;
+            this.ParseResult.Reset ();
             return ParseExcelFile (stream).ToArray ();
         }
 
         private IEnumerable<T> ParseExcelFile (Stream stream) {
-            ModelState.Clear ();
+            ParseResult.Reset ();
             using (var reader = ExcelReaderFactory.CreateReader (stream)) {
-                if (MatchWorkSheet (reader, out var headerRow)) {
-                    if (ValidateColumns (_fieldMaps)) {
+                if (MatchWorkSheet (reader, out var headerRow)) { //匹配工作表
+                    if (ValidateColumns (_fieldMaps)) { //验证列是否满足 IsRequired 条件
+                        //获取行号列
                         var rowNumField = _settings.GetRowNumberMap (_fieldMaps);
                         int row = headerRow;
                         while (reader.Read ()) {
@@ -63,11 +58,21 @@ namespace ExcelDataReader.FieldMaps {
                         }
                     }
                 } else {
-                    ModelState.AddModelError ("WorkSheet", "没有找到合适的工作表");
+                    ParseResult.SetParseError ("没有找到合适的工作表");
                 }
             }
         }
 
+        /// <summary>
+        /// 匹配工作表
+        /// 根据 预设 SheetName 和 表头匹配 WorkSheet
+        /// </summary>
+        /// <param name="reader">Excel Reader</param>
+        /// <param name="headerRow">表头所在行号</param>
+        /// <returns>
+        /// <see langword="true"/> 匹配成功
+        /// <see langword="false"/>匹配失败,没有找到合适的工作表
+        /// </returns>
         private bool MatchWorkSheet (IExcelDataReader reader, out int headerRow) {
             reader.Reset ();
             do {
@@ -85,7 +90,8 @@ namespace ExcelDataReader.FieldMaps {
         }
 
         /// <summary>
-        /// 尝试读取标题行
+        /// 尝试读取表头
+        /// 满足找到 50% 以上的列,返回 <see langword="true"/>
         /// </summary>
         /// <param name="reader"></param>
         /// <param name="headerRow">表头行号</param>
@@ -159,7 +165,7 @@ namespace ExcelDataReader.FieldMaps {
                     }
                     if (reader.IsDBNull (field.ColumnIndex)) {
                         if (field.IsRequired) {
-                            this.ModelState.AddModelError ($"第{rowNum}行", $"列 '{field.Caption}'的值不能为空");
+                            this.ParseResult.AddRowError (rowNum, field.Caption, $"'{field.Caption}'的值不能为空");
                             return false;
                         } else {
                             continue;
@@ -169,7 +175,7 @@ namespace ExcelDataReader.FieldMaps {
                     value = reader.GetValue (field.ColumnIndex);
                     field.SetValue (entity, value);
                 } catch (FormatException) {
-                    ModelState.AddModelError ($"第{rowNum}行", $"列 '{field.Caption}'的值'{value}' 不能解析为{field.ValueType.Name}");
+                    ParseResult.AddRowError (rowNum, field.Caption, $"'{field.Caption}'的值'{value}' 解析失败");
                     return false;
                 }
             }
@@ -183,10 +189,10 @@ namespace ExcelDataReader.FieldMaps {
         private bool ValidateColumns (FieldMapBuilder<T> fieldMaps) {
             foreach (var field in fieldMaps) {
                 if (field.IsRequired && field.ColumnIndex < 0) {
-                    ModelState.AddModelError ("表头", $"缺少 '{field.Caption}' 列的映射");
+                    ParseResult.AddRowError (0, "表头", $"缺少 '{field.Caption}' 列");
                 }
             }
-            return ModelState.IsValid;
+            return ParseResult.IsValid;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace ExcelDataReader.FieldMaps.Tests {
                 Assert.NotNull (result);
                 Assert.NotEmpty (result);
                 Assert.Equal(16,result.Count());
-                Assert.True (parser.ModelState.IsValid);
+                Assert.True (parser.ParseResult.IsValid);
             }
         }
     }

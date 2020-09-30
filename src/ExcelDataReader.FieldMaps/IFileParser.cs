@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace ExcelDataReader.FieldMaps {
+namespace ExcelDataReader.FieldMaps
+{
     /// <summary>
     /// 文件/数据流 读取/解析器
     /// </summary>
@@ -20,7 +20,7 @@ namespace ExcelDataReader.FieldMaps {
         /// 验证状态
         /// </summary>
         /// <value></value>
-        ModelStateDictionary ModelState { get; }
+        ParseResult ParseResult { get; }
 
         /// <summary>
         /// 文件读取配置
