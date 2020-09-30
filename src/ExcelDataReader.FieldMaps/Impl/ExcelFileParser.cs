@@ -58,7 +58,7 @@ namespace ExcelDataReader.FieldMaps {
                         }
                     }
                 } else {
-                    ParseResult.SetParseError ("没有找到合适的工作表");
+                    ParseResult.AddMessage ("没有找到合适的工作表");
                 }
             }
         }
@@ -190,6 +190,7 @@ namespace ExcelDataReader.FieldMaps {
             foreach (var field in fieldMaps) {
                 if (field.IsRequired && field.ColumnIndex < 0) {
                     ParseResult.AddRowError (0, "表头", $"缺少 '{field.Caption}' 列");
+                    ParseResult.AddMessage("缺少必填列");
                 }
             }
             return ParseResult.IsValid;

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExcelDataReader.FieldMaps
-{
+namespace ExcelDataReader.FieldMaps {
     /// <summary>
     /// Excel 文件 解析结果
     /// </summary>
@@ -9,13 +8,17 @@ namespace ExcelDataReader.FieldMaps
         public const int Ok = 0;
 
         public const int ParseError = 1;
+
+        public const int NotFoundSheet = 1001;
+
+        public const int MissingRequiredColumn = 1002;
+
+        public const int ParseRowError = 1003;
+
+        private ISet<string> _messages = new HashSet<string> ();
+
         public ParseResult () {
             this.Errors = new List<RowError> ();
-        }
-
-        internal void SetParseError (string message) {
-            this.Message = message;
-            this.Code = ParseError;
         }
 
         /// <summary>
@@ -24,6 +27,16 @@ namespace ExcelDataReader.FieldMaps
         public void Reset () {
             this.Code = Ok;
             this.Errors.Clear ();
+        }
+
+        /// <summary>
+        /// 增加消息
+        /// </summary>
+        /// <param name="message"></param>
+        public void AddMessage (string message) {
+            if (!_messages.Contains (message)) {
+                _messages.Add (message);
+            }
         }
 
         public bool IsValid { get => Code == Ok && this.Errors.Count == 0; }
@@ -35,10 +48,10 @@ namespace ExcelDataReader.FieldMaps
         public int Code { get; set; }
 
         /// <summary>
-        /// 全局错误消息
+        /// 错误消息
         /// </summary>
         /// <value></value>
-        public string Message { get; set; }
+        public string Message { get => string.Join (",", _messages); }
 
         public IList<RowError> Errors { get; }
 
