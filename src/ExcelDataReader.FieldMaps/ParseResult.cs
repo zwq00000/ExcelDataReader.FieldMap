@@ -32,11 +32,13 @@ namespace ExcelDataReader.FieldMaps {
         /// <summary>
         /// 增加消息
         /// </summary>
+        /// <param name="errorCode">错误代码</param>
         /// <param name="message"></param>
-        public void AddMessage (string message) {
+        public void SetError (int errorCode, string message) {
             if (!_messages.Contains (message)) {
                 _messages.Add (message);
             }
+            this.Code = errorCode;
         }
 
         public bool IsValid { get => Code == Ok && this.Errors.Count == 0; }
@@ -53,6 +55,10 @@ namespace ExcelDataReader.FieldMaps {
         /// <value></value>
         public string Message { get => string.Join (",", _messages); }
 
+        /// <summary>
+        /// 错误详细列表
+        /// </summary>
+        /// <value></value>
         public IList<RowError> Errors { get; }
 
         public void AddRowError (int row, string message) {
