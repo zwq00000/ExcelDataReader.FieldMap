@@ -34,31 +34,45 @@ namespace ExcelDataReader.FieldMaps {
 
         public virtual IEnumerable<T> Read (Stream stream) {
             this.ParseResult.Reset ();
-            return ParseExcelFile (stream).ToArray ();
+            return ParseExcelFile (stream);
+        }
+
+        public bool TryReadSheet (IExcelDataReader reader, out IEnumerable<T> objs) {
+             this.ParseResult.Reset ();
+            if (!TryReadHeader (reader, out var headerRow)) {
+                objs = new T[0];
+                return false;
+            }
+            objs = ParseWorkSheet (reader, headerRow).ToArray();
+            return true;
+        }
+
+        private IEnumerable<T> ParseWorkSheet (IExcelDataReader reader, int headerRow) {
+            if (ValidateColumns (_fieldMaps)) { //验证列是否满足 IsRequired 条件
+                //获取行号列
+                var rowNumField = _settings.GetRowNumberMap (_fieldMaps);
+                int row = headerRow;
+                while (reader.Read ()) {
+                    row++;
+                    if (!IsEmptyRow (reader, _fieldMaps)) {
+                        if (TryReadDataRow (reader, row, out var entity)) {
+                            if (rowNumField != null) {
+                                rowNumField.SetValue (entity, (object) row);
+                            }
+                            yield return entity;
+                        }
+                    }
+                }
+            }
         }
 
         private IEnumerable<T> ParseExcelFile (Stream stream) {
-            ParseResult.Reset ();
             using (var reader = ExcelReaderFactory.CreateReader (stream)) {
                 if (MatchWorkSheet (reader, out var headerRow)) { //匹配工作表
-                    if (ValidateColumns (_fieldMaps)) { //验证列是否满足 IsRequired 条件
-                        //获取行号列
-                        var rowNumField = _settings.GetRowNumberMap (_fieldMaps);
-                        int row = headerRow;
-                        while (reader.Read ()) {
-                            row++;
-                            if (!IsEmptyRow (reader, _fieldMaps)) {
-                                if (TryReadDataRow (reader, row, out var entity)) {
-                                    if (rowNumField != null) {
-                                        rowNumField.SetValue (entity, (object) row);
-                                    }
-                                    yield return entity;
-                                }
-                            }
-                        }
-                    }
+                    return ParseWorkSheet (reader, headerRow).ToArray();
                 } else {
                     ParseResult.SetError (ParseResult.NotFoundSheet, "没有找到合适的工作表");
+                    return new T[0];
                 }
             }
         }
@@ -190,7 +204,7 @@ namespace ExcelDataReader.FieldMaps {
             foreach (var field in fieldMaps) {
                 if (field.IsRequired && field.ColumnIndex < 0) {
                     ParseResult.AddRowError (0, "表头", $"缺少 '{field.Caption}' 列");
-                    ParseResult.SetError(ParseResult.MissingRequiredColumn, "缺少必填列");
+                    ParseResult.SetError (ParseResult.MissingRequiredColumn, "缺少必填列");
                 }
             }
             return ParseResult.IsValid;

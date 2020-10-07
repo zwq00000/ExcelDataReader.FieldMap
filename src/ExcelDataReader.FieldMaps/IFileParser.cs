@@ -17,6 +17,26 @@ namespace ExcelDataReader.FieldMaps
         IEnumerable<T> Read (Stream stream);
 
         /// <summary>
+        /// 尝试读取 从 WorkSheet 中读取数据
+        /// 用于从多个表头匹配的工作表中读取数据
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="objs"></param>
+        /// <example>
+        /// <code>
+        ///  using (var reader = ExcelReaderFactory.CreateReader (stream)) {
+        ///    do {
+        ///       if(TryReadSheet(reader,out var values)) {
+        ///         ...
+        ///        }
+        ///    } while (reader.NextResult ());)
+        /// }
+        /// </code>
+        /// </example>
+        /// <returns></returns>
+        bool TryReadSheet (IExcelDataReader reader,out IEnumerable<T> objs);
+
+        /// <summary>
         /// 验证状态
         /// </summary>
         /// <value></value>
