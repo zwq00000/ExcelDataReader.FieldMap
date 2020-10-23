@@ -109,7 +109,7 @@ namespace ExcelDataReader.FieldMaps {
                 case TypeCode.Single:
                     return System.Convert.ToSingle (cellValue);
                 case TypeCode.String:
-                    return System.Convert.ToString (cellValue.ToString ());
+                    return  cellValue.ToString ().Trim(); //System.Convert.ToString (cellValue.ToString ());
                 case TypeCode.UInt16:
                     return System.Convert.ToUInt16 (cellValue);
                 case TypeCode.UInt32:

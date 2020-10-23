@@ -22,25 +22,25 @@ namespace ExcelDataReader.FieldMaps.Tests {
                 var result = parser.Read (stream);
                 Assert.NotNull (result);
                 Assert.NotEmpty (result);
-                Assert.Equal(16,result.Count());
+                Assert.Equal (16, result.Count ());
                 Assert.True (parser.ParseResult.IsValid);
             }
         }
 
         [Fact]
-        public void TestTryReadSheet(){
+        public void TestTryReadSheet () {
             var parser = new ReportDtoParser ();
             var file = GetSampleFile ("Fillreport.xlsx");
-            bool hasData= false;
-            using (var reader = ExcelReaderFactory.CreateReader(File.OpenRead (file))) {
-                do{
-                    if(parser.TryReadSheet(reader,out var values)){
-                        Assert.NotEmpty(values);
-                        hasData=true;
+            bool hasData = false;
+            using (var reader = ExcelReaderFactory.CreateReader (File.OpenRead (file))) {
+                do {
+                    if (parser.TryReadSheet (reader, out var values)) {
+                        Assert.NotEmpty (values);
+                        hasData = true;
                     }
-                }while(reader.NextResult());
+                } while (reader.NextResult ());
             }
-            Assert.True(hasData);
+            Assert.True (hasData);
         }
     }
 }

@@ -217,3 +217,5 @@ ModelManifest.xml
 #Build Result
 /Build/*.exe
 /Build/*.zip
+
+*.xlsx
